@@ -1,8 +1,21 @@
 from flask import Flask, request
+from sklearn.ensemble import RandomForestClassifier
 import numpy as np
+import pickle
 
 app = Flask(__name__)
+labels = ['WARRANTS', 'OTHER OFFENSES', 'LARCENY/THEFT', 'VEHICLE THEFT',
+       'VANDALISM', 'NON-CRIMINAL', 'ROBBERY', 'ASSAULT', 'WEAPON LAWS',
+       'BURGLARY', 'SUSPICIOUS OCC', 'DRUNKENNESS', 'FORGERY/COUNTERFEITING',
+       'DRUG/NARCOTIC', 'STOLEN PROPERTY', 'SECONDARY CODES', 'TRESPASS',
+       'MISSING PERSON', 'FRAUD', 'KIDNAPPING', 'RUNAWAY',
+       'DRIVING UNDER THE INFLUENCE', 'SEX OFFENSES FORCIBLE', 'PROSTITUTION',
+       'DISORDERLY CONDUCT', 'ARSON', 'FAMILY OFFENSES', 'LIQUOR LAWS',
+       'BRIBERY', 'EMBEZZLEMENT', 'SUICIDE', 'LOITERING',
+       'SEX OFFENSES NON FORCIBLE', 'EXTORTION', 'GAMBLING', 'BAD CHECKS',
+       'TREA', 'RECOVERED VEHICLE', 'PORNOGRAPHY/OBSCENE MAT']
 
+loaded_model = pickle.load(open("../finalized_model.sav", 'rb'))
 
 # dayofWeek, district, hour, month, year
 
@@ -11,12 +24,11 @@ app = Flask(__name__)
 def predict(day_of_week, district, hour, month, year):
     array_day = build_day_of_week(day_of_week)
     array_district = build_district(district)
-    props_array = np.append(array_day, array_district)
     date = [hour, month, year]
-    res = np.append(props_array, date)
-    
-
-    return f'{res}'
+    res = array_day +  array_district + date
+    predict = loaded_model.predict([res])
+    print(predict)
+    return f"{labels[predict[0]]}"
 
 
 def build_day_of_week(day_of_week):
